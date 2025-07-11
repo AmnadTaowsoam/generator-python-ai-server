@@ -101,47 +101,46 @@ module.exports = class extends Generator {
     ]);
   }
 
+  /**
+   * Write template files and copy .env
+   */
   writing() {
-  const { name } = this.answers;
-  const targetDir = this.destinationPath(name);
+    const { name } = this.answers;
+    const targetDir = this.destinationPath(name);
 
-  // 1) คัดลอกทุกอย่างจาก templates, inject this.answers
-  //    แล้ว strip .hbs ออกจากชื่อไฟล์อัตโนมัติ
-  this.fs.copyTpl(
-    this.templatePath('**/*'),
-    targetDir,
-    this.answers,
-    /* templateOptions */ null,
-    {
-      globOptions: {
-        dot: true,
-        ignore: ['**/node_modules/**', '**/*.lock']
-      },
-      // ตรงนี้ใช้ processDestinationPath เพื่อเปลี่ยนชื่อไฟล์ก่อนเขียนลง disk
-      processDestinationPath: filePath => {
-        // ถ้าไฟล์ลงท้าย .hbs ให้ตัดทิ้ง
-        return filePath.endsWith('.hbs')
-          ? filePath.replace(/\.hbs$/, '')
-          : filePath;
+    // 1) Copy all templates, inject answers, strip .hbs from filenames
+    this.fs.copyTpl(
+      this.templatePath('**/*'),
+      targetDir,
+      this.answers,
+      {}, // use empty templateOptions instead of null
+      {
+        globOptions: {
+          dot: true,
+          ignore: ['**/node_modules/**', '**/*.lock'],
+        },
+        processDestinationPath: filePath =>
+          filePath.endsWith('.hbs')
+            ? filePath.replace(/\.hbs$/, '')
+            : filePath,
       }
-    }
-  );
+    );
 
-  // 2) คัดลอก .env.example → .env จากโฟลเดอร์ templates
-  this.fs.copy(
-    this.templatePath('.env.example'),
-    this.destinationPath(name, '.env')
-  );
-},
+    // 2) Copy .env.example to .env from templates
+    this.fs.copy(
+      this.templatePath('.env.example'),
+      this.destinationPath(name, '.env')
+    );
+  }
 
-install() {
-  const targetDir = this.destinationPath(this.answers.name);
-  this.log(`Installing Python deps in ${name}…`);
-
-  // ถ้าเป็น Node โปรเจค ให้ใช้ npm install
-  // this.spawnCommandSync('npm', ['install'], { cwd: targetDir });
-
-  // แต่ถ้าเป็น Python โปรเจค ให้ใช้ pip install -r requirements.txt
-  this.spawnCommandSync('pip', ['install', '-r', 'requirements.txt'], { cwd: targetDir });
-}
+  /**
+   * Install Python dependencies via pip
+   */
+  install() {
+    const { name } = this.answers;
+    const targetDir = this.destinationPath(name);
+    this.log(`Installing Python dependencies in ${name}...`);
+    this.spawnCommandSync('pip', ['install', '-r', 'requirements.txt'], { cwd: targetDir });
+  }
 };
+
