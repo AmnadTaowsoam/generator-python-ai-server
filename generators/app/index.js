@@ -1,4 +1,5 @@
 const Generator = require('yeoman-generator').default;
+const path = require('path');
 
 module.exports = class extends Generator {
   async prompting() {
@@ -100,20 +101,20 @@ module.exports = class extends Generator {
       }
     ]);
   }
-
-  /**
+  
+/**
    * Write template files and copy .env
    */
   writing() {
     const { name } = this.answers;
     const targetDir = this.destinationPath(name);
 
-    // 1) Copy all templates, inject answers, strip .hbs from filenames
+    // คัดลอกทั้งหมดจาก templates, inject this.answers, strip .hbs
     this.fs.copyTpl(
       this.templatePath('**/*'),
       targetDir,
       this.answers,
-      {}, // use empty templateOptions
+      {}, // empty templateOptions
       {
         globOptions: {
           dot: true,
@@ -126,25 +127,27 @@ module.exports = class extends Generator {
       }
     );
 
-    // 2) Copy .env.example to .env from templates
+    // คัดลอก .env.example จาก templates ไป .env
     this.fs.copy(
       this.templatePath('.env.example'),
       this.destinationPath(name, '.env')
     );
   }
 
-   /**
-   * Create venv and install Python dependencies
+  /**
+   * Create virtual environment and install dependencies
    */
   install() {
     const { name } = this.answers;
     const targetDir = this.destinationPath(name);
     this.log(`Creating virtual environment in ${name}/.venv...`);
+
+    // สร้าง venv
     this.spawnCommandSync('python', ['-m', 'venv', '.venv'], { cwd: targetDir });
 
-    // Determine pip executable in venv
+    // กำหนดตำแหน่ง pip ใน venv (รองรับ Windows/Unix)
     const pipExec = process.platform === 'win32'
-      ? path.join(targetDir, '.venv', 'Scripts', 'pip')
+      ? path.join(targetDir, '.venv', 'Scripts', 'pip.exe')
       : path.join(targetDir, '.venv', 'bin', 'pip');
 
     this.log('Installing dependencies in virtual environment...');
