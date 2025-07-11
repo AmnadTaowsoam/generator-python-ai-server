@@ -1,0 +1,23 @@
+{
+  "name": "generator-python-ai-server",
+  "version": "1.0.0",
+  "description": "Yeoman generator for Python AI server scaffold",
+  "keywords": ["yeoman-generator","python","ai","server"],
+  "main": "generators/app/index.js",
+  "files": ["generators"],
+  "bin": {
+    "yo-python-ai-server": "generators/app/index.js"
+  },
+  "dependencies": {
+    "yeoman-generator": "^7.5.1",
+    "mem-fs": "^4.1.2",
+    "mem-fs-editor": "^11.1.4"
+  },
+  "devDependencies": {
+    "mocha": "^11.7.1",
+    "yeoman-assert": "^3.1.1"
+  },
+  "author": "Your Name",
+  "license": "MIT"
+}
+
