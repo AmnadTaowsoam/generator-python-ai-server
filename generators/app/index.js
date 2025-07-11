@@ -113,7 +113,7 @@ module.exports = class extends Generator {
       this.templatePath('**/*'),
       targetDir,
       this.answers,
-      {}, // use empty templateOptions instead of null
+      {}, // use empty templateOptions
       {
         globOptions: {
           dot: true,
@@ -133,14 +133,22 @@ module.exports = class extends Generator {
     );
   }
 
-  /**
-   * Install Python dependencies via pip
+   /**
+   * Create venv and install Python dependencies
    */
   install() {
     const { name } = this.answers;
     const targetDir = this.destinationPath(name);
-    this.log(`Installing Python dependencies in ${name}...`);
-    this.spawnCommandSync('pip', ['install', '-r', 'requirements.txt'], { cwd: targetDir });
+    this.log(`Creating virtual environment in ${name}/.venv...`);
+    this.spawnCommandSync('python', ['-m', 'venv', '.venv'], { cwd: targetDir });
+
+    // Determine pip executable in venv
+    const pipExec = process.platform === 'win32'
+      ? path.join(targetDir, '.venv', 'Scripts', 'pip')
+      : path.join(targetDir, '.venv', 'bin', 'pip');
+
+    this.log('Installing dependencies in virtual environment...');
+    this.spawnCommandSync(pipExec, ['install', '-r', 'requirements.txt'], { cwd: targetDir });
   }
 };
 
